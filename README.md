@@ -10,6 +10,13 @@ road transit, delivery and invoicing. Built from the Figma Make design
 - **Admin workspace** (`/admin`): create and edit shipments, clients, invoices,
   documents and staff accounts.
 
+## Static preview
+
+`docs/index.html` is a standalone, read-only copy of the dashboard on the sample
+data. Open it directly in a browser, or publish it with GitHub Pages
+(Settings → Pages → deploy from branch `main`, folder `/docs`). It is a snapshot,
+so it does not change when the app's data changes.
+
 ## Run it locally
 
 Requires Node 24.22+ and pnpm 10.
