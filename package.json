@@ -1,0 +1,53 @@
+{
+  "name": "ngb-cargo-tracking",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_OPTIONS=--no-deprecation next dev --port ${PORT:-3000} --hostname 0.0.0.0",
+    "build": "NODE_OPTIONS=--no-deprecation payload build",
+    "start": "NODE_OPTIONS=--no-deprecation next start",
+    "generate:importmap": "NODE_OPTIONS=--no-deprecation payload generate:importmap",
+    "generate:types": "NODE_OPTIONS=--no-deprecation payload generate:types",
+    "payload": "NODE_OPTIONS=--no-deprecation payload",
+    "seed": "NODE_OPTIONS=--no-deprecation payload run src/seed.ts"
+  },
+  "dependencies": {
+    "@payloadcms/next": "4.0.0-beta.4",
+    "@payloadcms/richtext-lexical": "4.0.0-beta.4",
+    "@payloadcms/translations": "4.0.0-beta.4",
+    "@payloadcms/ui": "4.0.0-beta.4",
+    "graphql": "^16.8.1",
+    "html-react-parser": "^5.2.10",
+    "monaco-editor": "0.55.1",
+    "next": "16.4.2",
+    "payload": "4.0.0-beta.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "^0.35.4",
+    "@payloadcms/db-sqlite": "4.0.0-beta.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "24.12.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "postcss": "^8.5.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=24.22.1",
+    "pnpm": "^9 || ^10 || ^11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "unrs-resolver",
+      "better-sqlite3",
+      "@libsql/client"
+    ]
+  },
+  "packageManager": "pnpm@10.34.3"
+}
