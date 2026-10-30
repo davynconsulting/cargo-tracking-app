@@ -1,9 +1,8 @@
 # cargo-tracking-app
 
-NGB Logistics cargo tracking: Phase 1 prototype of the API and background worker, built from the
-Cargo Tracking Functional Specification v1 (FRS) and the architecture doc.
-
-There is no web front end yet. Use the OpenAPI page at `/docs`, or any HTTP client.
+NGB Logistics cargo tracking: Phase 1 prototype of the API, background worker and three
+installable web apps, built from the Cargo Tracking Functional Specification v1 (FRS) and the
+architecture doc.
 
 ## What works
 
@@ -34,9 +33,34 @@ There is no web front end yet. Use the OpenAPI page at `/docs`, or any HTTP clie
 - **Closure.** Closure checks cover delivery, empty return, open exceptions and finance. An ops
   manager can close with a recorded exception.
 
+## Web apps (`apps/web`)
+
+Three installable PWAs from one React codebase. Each has its own manifest, icon and service-worker
+scope, so a driver installs only the driver app.
+
+- **Client portal (`/client/`).** Shipments with derived status, ETA and the reason it changed,
+  per-container progress, documents through expiring links, timeline, invoices with verified
+  payments, the message log, and per-contact WhatsApp, email and app-notification consent.
+- **Driver app (`/field/`).** Trips assigned to the signed-in driver, one large button per allowed
+  milestone, seal, border, receiver and depot fields, an optional compressed photo (the proof of
+  delivery on delivery), and problem reports. Milestones recorded with no signal are queued on the
+  phone with the time of the tap and an idempotency key, and sent when signal returns. English and
+  draft Swahili.
+- **Operations console (`/staff/`).** Shipment list and detail, milestones with overrides where the
+  rules allow, truck assignment, ETA revision with the notification threshold explained,
+  time corrections, document upload, exceptions queue, invoices and payment verification, message
+  log with retry, closure with checks, and registration with live ISO 6346 checks.
+
+The apps reuse the API's pure rules from `apps/api/src/domain` (milestone labels, container check
+digits), so the client-side checks cannot drift from the server's.
+
 ## Not built yet
 
-- The web app: client portal, field app and staff console PWAs.
+- Server-side web push. The apps ask for notification permission and the service worker handles
+  push events, but the API does not store subscriptions or send pushes yet. On iPhone, web push
+  only works once the app is added to the home screen.
+- Problem reports from the driver app need signal; only milestones are queued offline.
+- Sessions are kept in `localStorage`. Production should use httpOnly cookies.
 - A real WhatsApp, web push or email provider. Messages are logged for now.
   `src/notifications/senders.ts` is the seam.
 - S3 storage. Files go to local disk; `src/documents/storage.ts` is the seam.
@@ -56,7 +80,12 @@ export $(grep -v '^#' .env | xargs)
 npm run db:seed                 # runs migrations, then loads demo data
 npm run dev                     # API on http://localhost:3000, OpenAPI at /docs
 npm run worker:dev              # in a second terminal: notifications and SLA checks
+cd ../web && npm run dev        # in a third terminal: http://localhost:5173 (proxies /api to :3000)
 ```
+
+Open http://localhost:5173/client/, /field/ or /staff/. To try the driver app on a phone, run
+`npx vite --host` and open the address it prints; installing it needs HTTPS, which a tunnel such as
+`cloudflared` or a deployed build provides.
 
 Demo sign-ins all use the password `prototype-password`:
 
@@ -80,8 +109,18 @@ TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres npm test
 ```
 
 With `TEST_DATABASE_URL` set, `test/acceptance.int.test.ts` also runs. It creates a fresh database
-and covers the FRS section 12 acceptance criteria against real PostgreSQL. AC-17 (mobile usability)
-waits for the web app.
+and covers the FRS section 12 acceptance criteria against real PostgreSQL.
+
+```sh
+cd apps/web
+npm test                                    # unit tests: offline queue, API client, formatting
+E2E_ADMIN_URL=postgres://postgres:postgres@localhost:5432/postgres npx playwright test
+```
+
+The browser tests run on a 375 px phone screen (AC-17). They create and seed an `ngb_e2e`
+database, start the API on port 3100 the same way `npm run dev` does, and cover sign-in per app,
+client isolation, offline milestone capture, container-number checks, the gate-out override and
+no horizontal scrolling on every main screen.
 
 ## Layout
 
@@ -97,4 +136,10 @@ apps/api/
   src/notifications/       Outbox draining and sending
   src/worker.ts            Background worker loop
   test/                    Acceptance tests against PostgreSQL
+apps/web/
+  client/ field/ staff/    One HTML entry per app
+  public/                  Manifests, icons and the shared service worker
+  src/shared/              API client, offline queue, sign-in, layout, shipment components
+  src/client/ src/field/ src/staff/   Each app's screens
+  e2e/                     Playwright tests at phone width
 ```

@@ -3,3 +3,5 @@ dist/
 .env
 storage/
 coverage/
+test-results/
+playwright-report/

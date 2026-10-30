@@ -10,7 +10,7 @@ import { hashPassword } from '../common/password';
 import { ZodPipe } from '../common/zod.pipe';
 import { Db, withContext } from '../db/client';
 import { consents, contacts, notifications, organizations, users } from '../db/schema';
-import { STAFF_ROLES } from '../domain/workflow';
+import { ROLES, STAFF_ROLES } from '../domain/workflow';
 import { retryNotification } from '../notifications/outbox';
 
 const phone = z.string().regex(/^\+[1-9]\d{7,14}$/, 'Use international format, e.g. +255754987321');
@@ -33,6 +33,8 @@ const CreateClientBody = z.object({
   }),
   portalPassword: z.string().min(10).optional(),
 });
+
+const UsersQuery = z.object({ role: z.enum(ROLES).optional() });
 
 const ConsentBody = z.object({
   channel: z.enum(['whatsapp', 'push', 'email']),
@@ -94,6 +96,19 @@ export class ClientsController {
   @Get('clients')
   list(@CurrentUser() user: AuthUser) {
     return withContext(this.db, contextFor(user), (tx) => tx.select().from(organizations).orderBy(organizations.legalName));
+  }
+
+  /** Staff pick drivers and agents from this list; contact details stay staff-only. */
+  @Roles(...STAFF_ROLES)
+  @Get('users')
+  users(@CurrentUser() user: AuthUser, @Query(new ZodPipe(UsersQuery)) q: z.infer<typeof UsersQuery>) {
+    return withContext(this.db, contextFor(user), (tx) =>
+      tx
+        .select({ id: users.id, name: users.name, role: users.role, phone: users.phone })
+        .from(users)
+        .where(and(eq(users.isActive, true), q.role ? eq(users.role, q.role) : undefined))
+        .orderBy(users.name),
+    );
   }
 
   @Roles(...STAFF_ROLES, 'client')
