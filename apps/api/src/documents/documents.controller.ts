@@ -39,7 +39,7 @@ export class DocumentsController {
   constructor(
     @Inject(DB) private readonly db: Db,
     @Inject(FILE_STORE) private readonly store: FileStore,
-    private readonly jwt: JwtService,
+    @Inject(JwtService) private readonly jwt: JwtService,
   ) {}
 
   @Roles('ops_manager', 'documentation', 'clearing_agent', 'transport', 'finance', 'driver')

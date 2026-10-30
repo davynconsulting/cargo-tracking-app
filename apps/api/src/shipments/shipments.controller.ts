@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { z } from 'zod';
 import { CurrentUser, Roles } from '../auth/auth.guard';
 import { AuthUser } from '../auth/auth.types';
@@ -18,7 +18,7 @@ const ListQuery = z.object({ status: z.enum(['open', 'closed']).optional() });
 
 @Controller()
 export class ShipmentsController {
-  constructor(private readonly shipments: ShipmentsService) {}
+  constructor(@Inject(ShipmentsService) private readonly shipments: ShipmentsService) {}
 
   @Roles('ops_manager', 'documentation')
   @Post('shipments')

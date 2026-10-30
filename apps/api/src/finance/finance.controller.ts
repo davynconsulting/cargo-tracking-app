@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { CurrentUser, Roles } from '../auth/auth.guard';
 import { AuthUser } from '../auth/auth.types';
@@ -7,7 +7,7 @@ import { CreateInvoiceBody, CreditBody, DisputeBody, FinanceService, RecordPayme
 
 @Controller()
 export class FinanceController {
-  constructor(private readonly finance: FinanceService) {}
+  constructor(@Inject(FinanceService) private readonly finance: FinanceService) {}
 
   @Roles('finance')
   @Post('invoices')

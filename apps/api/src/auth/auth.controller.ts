@@ -17,7 +17,7 @@ const LoginBody = z.object({ email: z.string().email(), password: z.string().min
 export class AuthController {
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly jwt: JwtService,
+    @Inject(JwtService) private readonly jwt: JwtService,
   ) {}
 
   @Public()
